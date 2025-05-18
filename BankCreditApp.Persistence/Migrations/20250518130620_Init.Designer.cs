@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BankCreditApp.Persistence.Migrations
 {
     [DbContext(typeof(BaseDbContext))]
-    [Migration("20250515124214_AddCreditTypesAndApplication")]
-    partial class AddCreditTypesAndApplication
+    [Migration("20250518130620_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,53 @@ namespace BankCreditApp.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("BankCreditApp.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserType")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users", (string)null);
+
+                    b.HasDiscriminator<string>("UserType").HasValue("ApplicationUser");
+
+                    b.UseTphMappingStrategy();
+                });
 
             modelBuilder.Entity("BankCreditApp.Domain.Entities.CreditApplication", b =>
                 {
@@ -149,6 +196,11 @@ namespace BankCreditApp.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CustomerType")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
+
                     b.Property<DateTime?>("DeletedDate")
                         .HasColumnType("datetime2");
 
@@ -166,11 +218,49 @@ namespace BankCreditApp.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Customers", (string)null);
 
-                    b.UseTptMappingStrategy();
+                    b.HasDiscriminator<string>("CustomerType").HasValue("Customer");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("BankCreditApp.Domain.Entities.CorporateApplicationUser", b =>
+                {
+                    b.HasBaseType("BankCreditApp.Domain.Entities.ApplicationUser");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("Users", (string)null);
+
+                    b.HasDiscriminator().HasValue("Corporate");
+                });
+
+            modelBuilder.Entity("BankCreditApp.Domain.Entities.IndividualApplicationUser", b =>
+                {
+                    b.HasBaseType("BankCreditApp.Domain.Entities.ApplicationUser");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("Users", (string)null);
+
+                    b.HasDiscriminator().HasValue("Individual");
                 });
 
             modelBuilder.Entity("BankCreditApp.Domain.Entities.CorporateCreditApplication", b =>
@@ -292,7 +382,9 @@ namespace BankCreditApp.Persistence.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.ToTable("CorporateCustomers", (string)null);
+                    b.ToTable("Customers", (string)null);
+
+                    b.HasDiscriminator().HasValue("Corporate");
                 });
 
             modelBuilder.Entity("BankCreditApp.Domain.Entities.IndividualCustomer", b =>
@@ -325,7 +417,9 @@ namespace BankCreditApp.Persistence.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.ToTable("IndividualCustomers", (string)null);
+                    b.ToTable("Customers", (string)null);
+
+                    b.HasDiscriminator().HasValue("Individual");
                 });
 
             modelBuilder.Entity("BankCreditApp.Domain.Entities.CreditApplication", b =>
@@ -337,6 +431,17 @@ namespace BankCreditApp.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("CreditType");
+                });
+
+            modelBuilder.Entity("BankCreditApp.Domain.Entities.Customer", b =>
+                {
+                    b.HasOne("BankCreditApp.Domain.Entities.ApplicationUser", "User")
+                        .WithOne("Customer")
+                        .HasForeignKey("BankCreditApp.Domain.Entities.Customer", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BankCreditApp.Domain.Entities.CorporateCreditApplication", b =>
@@ -393,25 +498,40 @@ namespace BankCreditApp.Persistence.Migrations
 
             modelBuilder.Entity("BankCreditApp.Domain.Entities.CorporateCustomer", b =>
                 {
-                    b.HasOne("BankCreditApp.Domain.Entities.Customer", null)
-                        .WithOne()
-                        .HasForeignKey("BankCreditApp.Domain.Entities.CorporateCustomer", "Id")
+                    b.HasOne("BankCreditApp.Domain.Entities.CorporateApplicationUser", null)
+                        .WithOne("CorporateCustomer")
+                        .HasForeignKey("BankCreditApp.Domain.Entities.CorporateCustomer", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
             modelBuilder.Entity("BankCreditApp.Domain.Entities.IndividualCustomer", b =>
                 {
-                    b.HasOne("BankCreditApp.Domain.Entities.Customer", null)
-                        .WithOne()
-                        .HasForeignKey("BankCreditApp.Domain.Entities.IndividualCustomer", "Id")
+                    b.HasOne("BankCreditApp.Domain.Entities.IndividualApplicationUser", null)
+                        .WithOne("IndividualCustomer")
+                        .HasForeignKey("BankCreditApp.Domain.Entities.IndividualCustomer", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BankCreditApp.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("BankCreditApp.Domain.Entities.CreditType", b =>
                 {
                     b.Navigation("CreditApplications");
+                });
+
+            modelBuilder.Entity("BankCreditApp.Domain.Entities.CorporateApplicationUser", b =>
+                {
+                    b.Navigation("CorporateCustomer");
+                });
+
+            modelBuilder.Entity("BankCreditApp.Domain.Entities.IndividualApplicationUser", b =>
+                {
+                    b.Navigation("IndividualCustomer");
                 });
 #pragma warning restore 612, 618
         }

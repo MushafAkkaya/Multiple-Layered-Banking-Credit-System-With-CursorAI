@@ -1,12 +1,12 @@
 using BankCreditApp.Core.Repositories;
 using System;
 
-public class User : Entity<Guid>
+public abstract class User : Entity<Guid>, INameResolver
 {
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
     public string Email { get; set; }
     public byte[] PasswordSalt { get; set; }
     public byte[] PasswordHash { get; set; }
     public bool Status { get; set; }
+
+    public abstract string GetDisplayName();
 } 

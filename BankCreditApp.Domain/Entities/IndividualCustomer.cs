@@ -1,5 +1,6 @@
 namespace BankCreditApp.Domain.Entities;
 
+// [Table("IndividualCustomers")] - Remove if exists
 public class IndividualCustomer : Customer
 {
     public string FirstName { get; set; } = default!;

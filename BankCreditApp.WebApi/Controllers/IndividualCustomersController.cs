@@ -14,11 +14,10 @@ namespace BankCreditApp.WebApi.Controllers;
 public class IndividualCustomersController : BaseController
 {
     [HttpPost]
-    public async Task<IActionResult> Add([FromBody] CreateIndividualCustomerRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateIndividualCustomerCommand command)
     {
-        CreateIndividualCustomerCommand command = new() { Request = request };
-        CreateIndividualCustomerResponse response = await Mediator.Send(command);
-        return Created("", response);
+        var result = await Mediator.Send(command);
+        return Created("", result);
     }
 
     [HttpGet("{id}")]

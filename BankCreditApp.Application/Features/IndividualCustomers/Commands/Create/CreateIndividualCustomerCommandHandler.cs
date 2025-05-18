@@ -1,20 +1,17 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using AutoMapper;
-using BankCreditApp.Application.Features.IndividualCustomers.Dtos.Requests;
-using BankCreditApp.Application.Features.IndividualCustomers.Dtos.Responses;
-using BankCreditApp.Application.Features.IndividualCustomers.Rules;
+using BankCreditApp.Domain.Entities;
 using BankCreditApp.Application.Services.Repositories;
 using BankCreditApp.Core.Security.Hashing;
-using BankCreditApp.Domain.Entities;
-using MediatR;
+using BankCreditApp.Application.Features.IndividualCustomers.Rules;
+using BankCreditApp.Application.Features.IndividualCustomers.Dtos.Responses;
 
-namespace BankCreditApp.Application.Features.IndividualCustomers.Commands.Create;
-
-public class CreateIndividualCustomerCommand : IRequest<CreateIndividualCustomerResponse>
+namespace BankCreditApp.Application.Features.IndividualCustomers.Commands.Create
 {
-    public CreateIndividualCustomerRequest Request { get; set; } = null!;
-
-    public class CreateIndividualCustomerCommandHandler 
-        : IRequestHandler<CreateIndividualCustomerCommand, CreateIndividualCustomerResponse>
+    public class CreateIndividualCustomerCommandHandler : IRequestHandler<CreateIndividualCustomerCommand, CreateIndividualCustomerResponse>
     {
         private readonly IIndividualCustomerRepository _individualCustomerRepository;
         private readonly IMapper _mapper;
@@ -30,9 +27,7 @@ public class CreateIndividualCustomerCommand : IRequest<CreateIndividualCustomer
             _businessRules = businessRules;
         }
 
-        public async Task<CreateIndividualCustomerResponse> Handle(
-            CreateIndividualCustomerCommand request, 
-            CancellationToken cancellationToken)
+        public async Task<CreateIndividualCustomerResponse> Handle(CreateIndividualCustomerCommand request, CancellationToken cancellationToken)
         {
             // Business Rules
             await _businessRules.CustomerIdentityNumberCannotBeDuplicated(request.Request.IdentityNumber);

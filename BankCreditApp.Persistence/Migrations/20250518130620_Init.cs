@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BankCreditApp.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddCreditTypesAndApplication : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -31,6 +31,29 @@ namespace BankCreditApp.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CreditTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserType = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
+                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -105,6 +128,46 @@ namespace BankCreditApp.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Customers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CustomerNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CustomerType = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
+                    CompanyName = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
+                    TaxNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    TaxOffice = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
+                    CompanyType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    AuthorizedPersonName = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
+                    AnnualTurnover = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    EstablishmentDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    IdentityNumber = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Occupation = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
+                    MonthlyIncome = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Customers_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CorporateCreditApplications",
                 columns: table => new
                 {
@@ -119,17 +182,17 @@ namespace BankCreditApp.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_CorporateCreditApplications", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CorporateCreditApplications_CorporateCustomers_CorporateCustomerId",
-                        column: x => x.CorporateCustomerId,
-                        principalTable: "CorporateCustomers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_CorporateCreditApplications_CreditApplications_Id",
                         column: x => x.Id,
                         principalTable: "CreditApplications",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CorporateCreditApplications_Customers_CorporateCustomerId",
+                        column: x => x.CorporateCustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -153,9 +216,9 @@ namespace BankCreditApp.Persistence.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_IndividualCreditApplications_IndividualCustomers_IndividualCustomerId",
+                        name: "FK_IndividualCreditApplications_Customers_IndividualCustomerId",
                         column: x => x.IndividualCustomerId,
-                        principalTable: "IndividualCustomers",
+                        principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -169,6 +232,12 @@ namespace BankCreditApp.Persistence.Migrations
                 name: "IX_CreditApplications_CreditTypeId",
                 table: "CreditApplications",
                 column: "CreditTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Customers_UserId",
+                table: "Customers",
+                column: "UserId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_IndividualCreditApplications_IndividualCustomerId",
@@ -195,7 +264,13 @@ namespace BankCreditApp.Persistence.Migrations
                 name: "CreditApplications");
 
             migrationBuilder.DropTable(
+                name: "Customers");
+
+            migrationBuilder.DropTable(
                 name: "CreditTypes");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

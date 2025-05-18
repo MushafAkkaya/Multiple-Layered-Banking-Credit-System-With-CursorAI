@@ -48,7 +48,7 @@ public class JwtHelper : ITokenHelper
         var claims = new List<Claim>();
         claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
         claims.Add(new Claim(ClaimTypes.Email, user.Email));
-        claims.Add(new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"));
+        claims.Add(new Claim(ClaimTypes.Name, user.GetDisplayName()));
         claims.AddRange(operationClaims.Select(x => new Claim(ClaimTypes.Role, x.Name)));
         return claims;
     }
