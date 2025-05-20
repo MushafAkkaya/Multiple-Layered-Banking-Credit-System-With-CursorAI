@@ -145,14 +145,6 @@ BankCreditApp/
 
 ---
 
-## 📸 Screenshots
-
-### Swagger UI
-
-![Swagger UI Screenshot](./assets/swagger-ui.png)
-
-> To display this image, add your screenshot under `assets/swagger-ui.png` in the repo.
-
 ---
 
 ## 🤝 Contributing
