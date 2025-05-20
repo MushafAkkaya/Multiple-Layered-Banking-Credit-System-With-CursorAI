@@ -145,8 +145,6 @@ BankCreditApp/
 
 ---
 
----
-
 ## 🤝 Contributing
 
 Contributions are welcome!
